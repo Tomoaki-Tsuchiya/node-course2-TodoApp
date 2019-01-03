@@ -15,7 +15,7 @@ var todos = [{
 
 //Clearing everything to a standard line for every test case
 beforeEach((done) => {
-    todoModel.remove({}).then(() => {
+    todoModel.deleteMany({}).then(() => {
         return todoModel.insertMany(todos);
     }).then(() => done());
 });
@@ -98,8 +98,47 @@ describe('GET /todos/:id' ,() => {
             .get('/todos/123456')
             .expect(404)
             .end(done);
-    })
+    });
 
 
 
-})
+});
+
+describe('DELETE /todos/:id', () => {
+    it('should remove a todo', (done) => {
+        var hexID = todos[1]._id.toHexString();
+
+        request(app)
+            .delete(`/todos/${hexID}`)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(todos[1].text);
+            })
+            .end((err,res) => {
+                if(err){
+                    return done(err);
+                }
+
+                todoModel.findById(hexID).then((result) => {
+                    expect(result).toNotExist;
+                    done();
+                }).catch((e) => {
+                    return done(e);
+                });
+            });
+    });
+
+    it('should return 404 if no todo got back', (done) => {
+        var newID = new ObjectID().toHexString();
+        request(app)
+            .delete(`/todos/${newID}`)
+            .expect(404).end(done);
+    });
+
+    it('should return 404 if ID is not valid', (done) => {
+        request(app)
+            .delete('/todos/123456')
+            .expect(404)
+            .end(done);
+    });
+});
