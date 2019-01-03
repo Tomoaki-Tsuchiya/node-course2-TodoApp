@@ -28,7 +28,7 @@ app.post('/todos', (req,res) => {
 
 app.get('/todos', (req, res) => {
     todoModel.find().then((todos) => {
-        res.status(200).send(todos);
+        res.status(200).send({todos});
     }, (e) => {
         res.status(400).send(e);
     })
@@ -41,11 +41,11 @@ app.get('/todos/:id', (req,res) => {
     if(!ObjectID.isValid(id)){
         return res.send(404, 'ID is not valid!');
     }
-    todoModel.findById(id).then((todo) => {
+    todoModel.findOne({_id : new ObjectID(id) }).then((todo) => {
         if(!todo){
             return res.status(404).send('No todos with the specified ID.');
         }
-        res.status(200).send(todo);
+        res.status(200).send({todo});
     },(e) => {
         res.status(400).send(e);
     })

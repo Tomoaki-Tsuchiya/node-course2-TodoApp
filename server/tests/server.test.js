@@ -70,7 +70,7 @@ describe('GET /todos', () => {
             .get('/todos')
             .expect(200)
             .expect((res) => {
-                expect(res.body.length).toBe(2);
+                expect(res.body.todos.length).toBe(2);
             })
             .end(done);
     });
@@ -82,7 +82,7 @@ describe('GET /todos/:id' ,() => {
             .get(`/todos/${todos[0]._id.toHexString()}`)
             .expect(200)
             .expect((res) => {
-                expect(res.body.text).toBe(todos[0].text)
+                expect(res.body.todo.text).toBe(todos[0].text)
             }).end(done);
     });
 
