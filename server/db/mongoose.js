@@ -9,6 +9,7 @@ var mongoose = require('mongoose');
 //     return 'mongodb://tomotaro:tom0test@ds041140.mlab.com:41140/todoapp'
 // }
 
+//以下のconditional operatorなら上手く作動する
 var mongoUrl = (!process.env.PORT)? 'mongodb://localhost:27017/TodoApp' : 'mongodb://tomotaro:tom0test@ds041140.mlab.com:41140/todoapp';
 
 mongoose.Promise = global.Promise;

@@ -10,7 +10,9 @@ var todos = [{
     text: 'First test Todo'
 }, {
     _id: new ObjectID(),
-    text: "Second test Todo"
+    text: "Second test Todo",
+    completed: true,
+    completedAt: 333
 }];
 
 //Clearing everything to a standard line for every test case
@@ -142,3 +144,37 @@ describe('DELETE /todos/:id', () => {
             .end(done);
     });
 });
+
+describe('PATCH /todos/:id', () => {
+    it('should update a todo', (done) => {
+        //grab id of the first item
+        var hexId = todos[0]._id.toHexString();
+        var body = {
+            text: 'update first todo',
+            completed: true
+        };
+
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .send(body)
+            .expect(200)
+            .end((err,res) => {
+                if(err){
+                    return done(err);
+                }
+                todoModel.findById(hexId).then((result) => {
+                    expect(result).toExist;
+                    expect(result.text).toBe(body.text);
+                    expect(result.completed).toBe(true);
+                    expect(typeof result.completedAt).toBe('number');
+                    done();
+                }).catch((e) => {
+                    return done(e);
+                }); 
+            });
+    });
+
+    // it('should clear completedAt when todo is not completd', (done) => {
+
+    // });
+})
