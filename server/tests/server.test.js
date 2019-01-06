@@ -174,7 +174,28 @@ describe('PATCH /todos/:id', () => {
             });
     });
 
-    // it('should clear completedAt when todo is not completd', (done) => {
+    it('should clear completedAt when todo is not completd', (done) => {
+        var body = {
+            text: 'update second todo',
+            completed: false
+        };
+        var hexId = todos[1]._id.toHexString();
 
-    // });
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .send(body)
+            .expect(200)
+            .end((err,res) => {
+                if(err){
+                    return done(err);
+                }
+                todoModel.findById(hexId).then((todo) => {
+                    expect(todo).toExist;
+                    expect(todo.completed).toBe(body.completed);
+                    expect(todo.text).toBe(body.text);
+                    expect(todo.completedAt).toNotExist;
+                    done();
+                }).catch((e) => done(e));
+            });
+    });
 })
