@@ -7,6 +7,7 @@ var {mongoose} = require('./db/mongoose');
 var {todoModel} = require('./models/todo');
 var {userModel} = require('./models/users');
 const {ObjectID} = require('mongodb');
+const {authenticate} = require('./middleware/authenticate')
 
 var app = express();
 
@@ -112,23 +113,10 @@ app.post('/users', (req, res) => {
     })
 })
 
-
 //route that requires Authentication
-app.get('/users/me',(req, res)=> {
-    var token = req.header('x-auth');
-    //検索するときは、インスタンスではなく、Modelに対してmethodを投げかける
-    //つまり、UserModel.findById()などを仕掛ける。
-    //これまではインスタンスに対してgenAuthTokenなど作ってきたが、Modelに対して作る場合は、
-    //Model側でUserSchema.statics.method = func()と作成する
-    userModel.findByToken(token).then((user)=>{
-        if(!user){
-            return Promise.reject();
-        }
-        res.send(user);
-    }).catch(e => {
-        res.status(401).send(e)
-    });
-})
+app.get('/users/me', authenticate, (req, res)=> {
+    res.send(req.user)
+});
 
 app.listen(port, () => {
     console.log(`app is listening @ ${port}`);
