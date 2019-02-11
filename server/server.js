@@ -104,9 +104,11 @@ app.post('/users', (req, res) => {
 
     var user = new userModel(body);
     user.save().then((user) => {
+        console.log(user)
         return user.generateAuthToken();
         // res.status(200).send(user);
     }).then((token)=> {
+        console.log('User after token:', user)
         res.header('x-auth', token).send(user)
     }).catch((e) => {
         res.status(400).send(e);
