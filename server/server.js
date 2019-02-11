@@ -102,11 +102,32 @@ app.post('/users', (req, res) => {
     var body = _.pick(req.body,['name', 'email', 'password']);
 
     var user = new userModel(body);
-    user.save().then((docs) => {
-        res.status(200).send(docs);
+    user.save().then((user) => {
+        return user.generateAuthToken();
+        // res.status(200).send(user);
+    }).then((token)=> {
+        res.header('x-auth', token).send(user)
     }).catch((e) => {
         res.status(400).send(e);
     })
+})
+
+
+//route that requires Authentication
+app.get('/users/me',(req, res)=> {
+    var token = req.header('x-auth');
+    //検索するときは、インスタンスではなく、Modelに対してmethodを投げかける
+    //つまり、UserModel.findById()などを仕掛ける。
+    //これまではインスタンスに対してgenAuthTokenなど作ってきたが、Modelに対して作る場合は、
+    //Model側でUserSchema.statics.method = func()と作成する
+    userModel.findByToken(token).then((user)=>{
+        if(!user){
+            return Promise.reject();
+        }
+        res.send(user);
+    }).catch(e => {
+        res.status(401).send(e)
+    });
 })
 
 app.listen(port, () => {
