@@ -1,3 +1,6 @@
+//this is an old js file with user model only
+//This doesn't  include the userSchema and model.function()
+
 const mongoose = require('mongoose');
 const validator = require('validator');
 
