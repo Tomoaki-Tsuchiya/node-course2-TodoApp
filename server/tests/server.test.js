@@ -1,6 +1,7 @@
 const expect = require('expect');
 const request = require('supertest');
 const {ObjectID} = require('mongodb');
+const jwt = require('jsonwebtoken');
 
 var {app} = require('./../server');
 var {todoModel} = require('./../models/todo');
@@ -245,7 +246,7 @@ describe('POST /users', () => {
     it('should return validation errors if request invalid', (done) => {
         var name = 'tomotest2';
         var email = 'emailemail';
-        var password = 'as';
+        var password = '';
 
         request(app)
             .post('/users')
@@ -273,4 +274,57 @@ describe('POST /users', () => {
             .end(done);
     })
 
-})
+});
+
+describe('POST /users/login', () => {
+    it('should login user and return auth token', (done) => {
+        var name = users[0].name;
+        var email = users[0].email;
+        var password = users[0].password;
+
+        request(app)
+            .post('/users/login')
+            .send({name, email, password})
+            .expect(200)
+            .expect((res) => {
+                expect(res.body._id).toExist;
+                expect(res.body.email).toBe(email);
+                var token = jwt.sign({_id: res.body._id, access: 'auth'},'abc123').toString();
+                expect(res.headers['x-auth']).toBe(token);
+            })
+            .end((err) => {
+                if(!err) {
+                    return done(err);
+                }
+                userModel.findByToken(token).then((user) => {
+                    expect(user).toExist;
+                    done();
+                }).catcu((e) => done());
+                // request(app)
+                //     .get('/users/me')
+                //     .set('x-auth', token)
+                //     .expect((res) => {
+                //         console.log('2nd request is executed here!');
+                //         expect(res).toExist;
+                //     })
+                //     .end(done);
+            });
+    });
+
+    it('should reject invalid login', (done) => {
+        var name = users[0].name;
+        var email = users[0].email;
+        var password = users[0].password　+ 'abc';
+
+        request(app)
+            .post('/users/login')
+            .send({name, email, password})
+            .expect(400)
+            .expect((res) => {
+                // console.log(res);
+                // expect(res.text).toBe('No such user. Please check your email.');
+                expect(res.text).toBe('Password is wrong.');
+            })
+            .end(done);
+    });
+}) ;
