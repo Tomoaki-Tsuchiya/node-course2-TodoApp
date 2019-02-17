@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 const port = process.env.PORT || 3000;
 
 var {mongoose} = require('./db/mongoose');
@@ -113,6 +114,31 @@ app.post('/users', (req, res) => {
     }).catch((e) => {
         res.status(400).send(e);
     })
+});
+
+//POST /users/login {email,password}
+app.post('/users/login', (req,res) => {
+    var body = _.pick(req.body, ['name', 'email', 'password']);
+
+    userModel.findByCredentials(body.email, body.password).then((user) => {
+        return user.generateAuthToken().then((token) => {
+            res.header('x-auth', token).send(user)
+        })
+    }).catch((e) => {
+        res.status(400).send(e);
+    })
+    // userModel.findOne({email: body.email}).then((user) => {
+    //     if(!user){
+    //         return res.status(400).send('Email is incorrect. Please check your email.');
+    //     }
+    //     bcrypt.compare(body.password, user.password, (err, result) => {
+    //         if(!result){
+    //             return res.status(401).send('Password is incorrect. Please check your password');
+    //         }
+    //         res.status(200).send(user)
+    //     })
+    // });
+
 })
 
 //route that requires Authentication
